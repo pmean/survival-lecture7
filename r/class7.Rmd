@@ -212,21 +212,21 @@ x <- seq(0.001, 4, length=1000)
 plot(x, dgamma(x, alpha, rate=alpha), 
   type="l", xlim=c(0, 4), ylim=c(0,3))
 qg <- qgamma(c(0.25, 0.75), alpha, rate=alpha)
-segments(qg, 0, qg, 2.5)
-text(qg, 2.75, round(qg, 2))
+segments(qg, 0, qg, 2.75)
+text(qg, 2.95, round(qg, 2), cex=0.5)
 ```
 
 ## Gamma distribution, alpha=10
 
-```{r graph-gamma}
+```{r graph-gamma-10}
 par(mar=c(2.6, 2.6, 0.6, 0.6))
 alpha <- 10
 x <- seq(0.001, 4, length=1000)
 plot(x, dgamma(x, alpha, rate=alpha), 
   type="l", xlim=c(0, 4), ylim=c(0, 3))
 qg <- qgamma(c(0.25, 0.75), alpha, rate=alpha)
-segments(qg, 0, qg, 2.5)
-text(qg, 2.75, round(qg, 2))
+segments(qg, 0, qg, 2.75)
+text(qg, 2.95, round(qg, 2), cex=0.5)
 ```
 
 ## Gamma distribution: alpha=5
@@ -237,8 +237,8 @@ par(mar=c(2.6, 2.6, 0.6, 0.6))
 plot(x, dgamma(x, alpha, rate=alpha), 
   type="l", xlim=c(0, 4), ylim=c(0, 3))
 qg <- qgamma(c(0.25, 0.75), alpha, rate=alpha)
-segments(qg, 0, qg, 2.5)
-text(qg, 2.75, round(qg, 2))
+segments(qg, 0, qg, 2.75)
+text(qg, 2.95, round(qg, 2), cex=0.5)
 ```
 
 ## Gamma distribution: alpha=2
@@ -249,8 +249,8 @@ par(mar=c(2.6, 2.6, 0.6, 0.6))
 plot(x, dgamma(x, alpha, rate=alpha), 
   type="l", xlim=c(0, 4), ylim=c(0, 3))
 qg <- qgamma(c(0.25, 0.75), alpha, rate=alpha)
-segments(qg, 0, qg, 2.5)
-text(qg, 2.75, round(qg, 2))
+segments(qg, 0, qg, 2.75)
+text(qg, 2.95, round(qg, 2), cex=0.5)
 ```
 
 ## Partial listing of rats data
@@ -278,7 +278,8 @@ overall_km <- survfit(rats_surv~1)
 overall_km %>%
   tidy                                     %>%
   ggplot(aes(time, estimate)) +
-    geom_step()
+    geom_step() +
+    expand_limits(y=0)
 ```
 
 ## Survival by treatment
@@ -288,7 +289,8 @@ par(mar=c(2.6, 2.6, 0.6, 0.6))
 survfit(rats_surv~rx, data=rats)           %>%
   tidy                                     %>%
   ggplot(aes(time, estimate, color=strata)) +
-    geom_step()
+    geom_step() +
+    expand_limits(y=0)
 ```
 
 ## Survival by sex
@@ -298,7 +300,8 @@ par(mar=c(2.6, 2.6, 0.6, 0.6))
 survfit(rats_surv~sex, data=rats)          %>%
   tidy                                     %>%
   ggplot(aes(time, estimate, color=strata)) +
-    geom_step()
+    geom_step() +
+    expand_limits(y=0)
 ```
 
 ## Cluster effect
@@ -331,65 +334,26 @@ When you have two or more events occurring on a single patient, you have three d
 
 ## Graphical display of three models
 
-```{r three-models}
-# kidney is a data set found in the survival library.
-kidney2 <- kidney
-kidney2$s <- kidney2$status
-par(mar=c(2.6, 2.6, 0.6, 0.6))
-plot_sequence <- function(i) {
-  c1 <- "darkred"
-  c2 <- "darkgreen"
-  kidney2$lb <- ifelse(kidney2$status==1, "D", "C")
-  kidney2                %>%
-    filter(id==i)        %>%
-    filter(s==1)         %>%
-    select(time, lb)     -> t1
-  kidney2                %>%
-    filter(id==i)        %>%
-    filter(s==2)         %>%
-    select(time, lb)     -> t2
-  t2$time <- ifelse(t1$lb=="C", NA, t2$time)
-  tmax <- sum(t1$time,t2$time, na.rm=TRUE)
-  plot(c(0, 1.4*tmax), c(10, 50), type="n", axes=FALSE)
-  axis(side=1, at=c(0, t1$time, t2$time, tmax))
-  segments(0, 50, t1$time, 50, col=c1)
-  segments(t1$time, 50, tmax, 50, col=c2)
-  text(t1$time, 50, t1$lb, col=c1)
-  text(tmax,    50, t2$lb, col=c2)
-  text(1.2*tmax, 45, "start", adj=1)
-  text(1.4*tmax, 45, "stop", adj=1)
+![Different models for timing multiple events](../images/multiple_events_graph.png)
 
-  segments(0, 40, t1$time, 40, col=c1)
-  segments(0, 36, t2$time, 36, col=c2)
-  text(t1$time, 40, t1$lb, col=c1)
-  text(t2$time, 36, t2$lb, col=c2)
-  text(1.2*tmax, 40, 0, col=c1, adj=1)
-  text(1.4*tmax, 40, t1$time, col=c1, adj=1)
-  text(1.2*tmax, 36, 0, col=c2, adj=1)
-  text(1.4*tmax, 36, t2$time, col=c2, adj=1)
-  
-  segments(0, 30, t1$time, 30, col=c1)
-  segments(t1$time, 26, tmax, 26, col=c2)
-  text(t1$time, 30, t1$lb, col=c1)
-  text(tmax, 26, t2$lb, col=c2)
-  text(1.2*tmax, 30, 0, col=c1, adj=1)
-  text(1.4*tmax, 30, t1$time, col=c1, adj=1)
-  text(1.2*tmax, 26, t1$time, col=c2, adj=1)
-  text(1.4*tmax, 26, tmax, col=c2, adj=1)
+## What have you learned today
 
-  segments(0, 20, t1$time, 20, col=c1)
-  segments(0, 16, tmax, 16, col=c2)
-  text(t1$time, 20, t1$lb, col=c1)
-  text(tmax, 16, t2$lb, col=c2)
-  text(1.2*tmax, 20, 0, col=c1, adj=1)
-  text(1.4*tmax, 20, t1$time, col=c1, adj=1)
-  text(1.2*tmax, 16, 0, col=c2, adj=1)
-  text(1.4*tmax, 16, tmax, col=c2, adj=1)
-}
-# plot_sequence(30)
-```
+* Left censoring versus left truncation
+* Interval censoring
+* Cluster models
+* Frailty models
 
-Save everything for possible later re-use.
+## Your homework
+
+1. Open the file, diabetes.csv.
+
+* Calculate and graph a Kaplan-Meier curve comparing treated to untreated eyes, ignoring for now the correlations inherent in this data set. Does it appear as if these survival curves differ? If so, do they appear to violate the assumption of proportional hazards?
+
+## Your homework
+
+* Calculate and interpret a Cox regression model using treat as an independent variable and id as a cluster effect.
+
+* Calculate and interpret a Cox regression model using treat as an independent variable and id as a frailty effect.
 
 ```{r save-everything}
 save.image("../../data/class7.RData")
