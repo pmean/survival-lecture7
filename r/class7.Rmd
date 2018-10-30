@@ -173,6 +173,22 @@ lines(
   type="s", col="red")
 ```
 
+## Cluster and frailty models
+
+A fundamental assumption of all the models so far is the assumption of independence.
+
+* Whether the event time for one patient is early or late has no effect on the event time for a different patient.
+
+There are settings, however, where two event times are correlated, and you can model this correlation using a cluster effect or a frailty effect.
+
+## Examples of correlated survival times
+
+* Times to failure of pairs of organs (kidneys, eyes) within a patient
+
+* Multi-center trials
+
+* Recurrent events (infection, re-hospitalization)
+
 ## Sandwich estimate
 
 You can account for cluster effects by modifying the variance-covariance of the coefficients. For the normal model without frailty effects, the information matrix is
