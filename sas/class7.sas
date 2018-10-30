@@ -28,20 +28,16 @@ proc lifereg
   model (t0, t1)= / distribution=exponential;
   output
     out=prob0
-    cdf=exp_prob;
+    cdf=exponential_p;
   weight n;
   title "Exponential fit to crack1 data";
-run;
-
-proc print
-    data=exp_mod1;
-  title1 "Parameter estimates for exponential model";
 run;
 
 data prob0;
   set prob0;
   if t0 = . then delete;
-  keep t0 exp_prob;
+  exponential_s = 1 - exponential_p;
+  keep t0 exponential_s;
 run;
 
 data prob1;
@@ -62,17 +58,18 @@ run;
 data prob3;
   merge prob0 prob1 prob2;
   by t0;
-  observed_p = np / (np + nq);
+  observed_s = 1 - np / (np+nq);
 run;
 
 proc print data=prob3;
-  title1 "Comparison of observed and predicted probabilities";
+  title1 "Comparison of observed and predicted survival";
 run;
 
 proc sgplot
     data=prob3;
-  scatter x=t0 y=observed_p;
-  series x=t0 y=exp_prob;
+  scatter x=t0 y=observed_s;
+  series x=t0 y=exponential_s;
+  yaxis min=0;
 run;
 
 data survival.crack2;
@@ -90,7 +87,7 @@ proc lifereg
   model (t0, t1)= / distribution=exponential;
   output
     out=prob4
-    cdf=exp_prob;
+    cdf=exponential_p;
   weight n;
   title "Exponential fit to crack2 data";
 run;
@@ -99,23 +96,16 @@ data prob4;
   set prob4;
   if t0 ^= .;
   t=t0;
-  keep t exp_prob;
+  exponential_s = 1 - exponential_p;
+  keep t exponential_s;
 run;
 
 data prob5;
   set survival.crack2;
   if t1 = . then delete;
   t=t1;
-  observed_p = c / 167;
-  keep t n observed_p;
-run;
-
-proc print
-    data=prob4;
-run;
-
-proc print
-    data=prob5;
+  observed_s = 1 - (c / 167);
+  keep t n observed_s;
 run;
 
 data prob6;
@@ -130,8 +120,9 @@ run;
 
 proc sgplot
     data=prob6;
-  scatter x=t y=observed_p;
-  series x=t y=exp_prob;
+  scatter x=t y=observed_s;
+  series x=t y=exponential_s;
+  yaxis min=0;
 run;
 
 ods pdf close;

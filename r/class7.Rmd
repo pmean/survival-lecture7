@@ -140,7 +140,37 @@ for (i in 1:80) {
 }
 plot(c(0, 80), c(1,n), type="n")
 segments(psychiatric$age, 1:n, psychiatric$age2, 1:n)
+```
+
+## Changes in number at risk
+
+```{r n_atrisk}
+par(mar=c(2.6, 2.6, 0.6, 0.6), las=1)
 plot(1:80, n_atrisk, type="s", ylim=c(0,25))
+```
+
+## Kaplan-Meier survival estimates
+
+```{r km}
+par(mar=c(2.6, 2.6, 0.6, 0.6), las=1)
+psychiatric              %$%
+  Surv(age, age2, death) -> psychiatric_surv
+survfit(psychiatric_surv~psychiatric$sex)    %>%
+  tidy                                       -> 
+psychiatric_km
+m <- psychiatric_km$strata=="psychiatric$sex=1"
+f <- psychiatric_km$strata=="psychiatric$sex=2"
+
+# Males are the red line, females black.
+plot(c(0, 80), c(0, 1), type="n")
+lines(
+  psychiatric_km$time[f],
+  psychiatric_km$estimate[f], 
+  type="s")
+lines(
+  psychiatric_km$time[m], 
+  psychiatric_km$estimate[m], 
+  type="s", col="red")
 ```
 
 ## Sandwich estimate
@@ -223,7 +253,83 @@ segments(qg, 0, qg, 2.5)
 text(qg, 2.75, round(qg, 2))
 ```
 
+## Partial listing of rats data
+
+```{r rats}
+# This data set is found in the survival package.
+head(rats)
+```
+
+## Descriptive statistics for rats data
+
+```{r graph-rats}
+table(rats$rx)
+table(rats$status)
+table(rats$sex)
+summary(rats$time)
+```
+
+## Overall survival
+
+```{r rats-overall}
+par(mar=c(2.6, 2.6, 0.6, 0.6))
+rats_surv <- Surv(rats$time, rats$status)
+overall_km <- survfit(rats_surv~1)
+overall_km %>%
+  tidy                                     %>%
+  ggplot(aes(time, estimate)) +
+    geom_step()
+```
+
+## Survival by treatment
+
+```{r unadjusted-rx}
+par(mar=c(2.6, 2.6, 0.6, 0.6))
+survfit(rats_surv~rx, data=rats)           %>%
+  tidy                                     %>%
+  ggplot(aes(time, estimate, color=strata)) +
+    geom_step()
+```
+
+## Survival by sex
+
+```{r unadjusted-sex}
+par(mar=c(2.6, 2.6, 0.6, 0.6))
+survfit(rats_surv~sex, data=rats)          %>%
+  tidy                                     %>%
+  ggplot(aes(time, estimate, color=strata)) +
+    geom_step()
+```
+
+## Cluster effect
+
+```{r rats-cluster}
+rats_cluster <- coxph(
+  rats_surv~rx+cluster(litter),
+  data=rats,
+  subset=(sex=="f"))
+```
+
+![Cluster model for rats data](../images/rats_cluster_model.png)
+
+## Frailty effect
+
+```{r rats-frailty}
+rats_random <- coxph(
+  rats_surv~rx+frailty(litter),
+  data=rats,
+  subset=(sex=="f"))
+```
+
+![Frailty model for rats data](../images/rats_frailty_model.png)
+
+
+
 ## Three models
+
+When you have two or more events occurring on a single patient, you have three different options for analyzing the data. It all depends on what the clock restarts at after the first event.
+
+## Graphical display of three models
 
 ```{r three-models}
 # kidney is a data set found in the survival library.
