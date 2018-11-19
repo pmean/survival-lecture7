@@ -125,4 +125,13 @@ proc sgplot
   yaxis min=0;
 run;
 
+* psychiatric patients.csv;
+
+* rats data set (found in survival package in R);
+
+* rats_cluster <- coxph(
+  rats_surv~rx+cluster(litter),
+  data=rats,
+  subset=(sex=="f"));
+  
 ods pdf close;

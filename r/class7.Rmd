@@ -1,7 +1,7 @@
 ---
 title: "Interval censoring and frailty models"
 author: "Steve Simon"
-output: powerpoint_presentation
+output: html_document
 ---
 
 ## Abstract
@@ -15,18 +15,17 @@ You can incorporate mutliple events per patient and account for center effects u
 ## Ignore this slide.
 
 ```{r load-libraries, echo=FALSE}
-library(broom, warn.conflict=FALSE)
-library(coxme, quietly=TRUE, warn.conflict=FALSE)
-library(dplyr, warn.conflict=FALSE)
-library(ggplot2, warn.conflict=FALSE)
-library(magrittr, warn.conflict=FALSE)
-library(survival, warn.conflict=FALSE)
-library(tidyr, warn.conflict=FALSE)
+suppressMessages(suppressWarnings(library(broom)))
+suppressMessages(suppressWarnings(library(coxme)))
+suppressMessages(suppressWarnings(library(dplyr)))
+suppressMessages(suppressWarnings(library(ggplot2)))
+suppressMessages(suppressWarnings(library(magrittr)))
+suppressMessages(suppressWarnings(library(survival)))
+suppressMessages(suppressWarnings(library(tidyr)))
 knitr::opts_chunk$set(
   echo=FALSE,
   fig.width=4.5,
   fig.height=2.5)
-
 ```
 
 ## Interval censored data
