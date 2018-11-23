@@ -12,6 +12,9 @@ ods pdf file="&path/survival-lecture7/sas/class7.pdf";
 libname survival
   "&path/data";
   
+* crack1 is an example of left/right censored data.
+;
+  
 data survival.crack1;
   infile "&path/data/crack1.txt";
   input t0 t1 n;
@@ -72,6 +75,9 @@ proc sgplot
   yaxis min=0;
 run;
 
+* crack2 is an example of interval censored data.
+;
+
 data survival.crack2;
   infile "&path/data/crack2.txt";
   input t0 t1 n c;
@@ -125,13 +131,90 @@ proc sgplot
   yaxis min=0;
 run;
 
-* psychiatric patients.csv;
+* psychiatric patients. This data set can be found at 
 
+math.usu.edu/jrstevens/biostat/projects2013/pres_LeftTruncation.pdf
+
+  It illustrates an application of left truncation.
+;
+
+proc import
+    datafile="&path/data/psychiatric patients.csv" 
+    dbms=dlm
+    out=survival.psych;
+    delimiter=",";
+    getnames=yes;
+run;
+
+proc print
+    data=survival.psych(obs=10);
+  title1 "Psychiatric patients";
+run;
+
+data survival.psych;
+  set survival.psych;
+  age2=age+time;
+run;
+
+proc phreg
+    data=survival.psych;
+  model (age, age2)*death(0)=sex;
+run;
+    
 * rats data set (found in survival package in R);
 
-* rats_cluster <- coxph(
-  rats_surv~rx+cluster(litter),
-  data=rats,
-  subset=(sex=="f"));
-  
+proc import
+    datafile="&path/data/rats.csv"
+    dbms=dlm
+    out=survival.rats;
+    delimiter=",";
+    getnames=yes;
+run;
+
+proc print
+    data=survival.rats(obs=10);
+  title1 "Rats litter example";
+run;
+    
+* Notice that within every litter, you have one
+  treated animal (rx=1) and two controls (rx=0).    
+;
+    
+proc freq 
+    data=survival.rats;
+  tables litter*rx /
+    norow nocol nopercent;
+  where litter <= 10;
+  title2 "Relationship between litter and rx";
+run;
+
+* Also notice the small number of events among the
+  male rats. I will analyze only the females from
+  this point forward.
+;
+
+proc freq 
+    data=survival.rats;
+  tables sex*status /
+    norow nocol nopercent;
+  title2 "Relationship between sex and status";
+run;
+
+proc phreg
+    data=survival.rats;
+  model time*status(0)=rx;
+  id litter;
+  where sex="f";
+  title2 "Cluster (marginal) model";
+run;
+
+proc phreg
+    data=survival.rats;
+  class litter;
+  model time*status(0)=rx;
+  random litter;
+  where sex="f";
+  title2 "Frailty (random) model";
+run;
+
 ods pdf close;
